@@ -11,6 +11,7 @@ namespace Domain.Common
 
         [Key]
         public Guid Id { get; set; }
+        [Required]
         public DateTime DateCreated { get; set; }
         public DateTime? DateUpdated { get; set; }
         public DateTime? DateDeleted { get; set; }

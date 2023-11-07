@@ -1,4 +1,5 @@
-﻿using Application.Repositories;
+﻿using Application.Common.Helpers;
+using Application.Repositories;
 using MediatR;
 
 namespace Application.Features.Client.Commands.CreateClientCommand
@@ -7,11 +8,15 @@ namespace Application.Features.Client.Commands.CreateClientCommand
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
+        private readonly IServiceBusHelper _serviceBusHelper;
+        private readonly ServiceBusQueue _serviceBusQueue;
 
-        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository)
+        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusQueue serviceBusQueue)
         {
             _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
+            _serviceBusHelper = serviceBusHelper;
+            _serviceBusQueue = serviceBusQueue;
         }
 
         public async Task<CreateClientResponse> Handle(CreateClientRequest request, CancellationToken cancellationToken)
@@ -25,16 +30,18 @@ namespace Application.Features.Client.Commands.CreateClientCommand
             client.PhoneNumber = request.PhoneNumber;
             client.DateCreated = DateTime.Now;
 
-            var data = await _clientRepository.CreateClientAsync(client, cancellationToken);
+            await _clientRepository.CreateClientAsync(client, cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
+
+            await _serviceBusHelper.SendMessage(client.Email, _serviceBusQueue.QueueName, _serviceBusQueue.ConnectionString);
 
             return new CreateClientResponse()
             {
-                Id = data.Entity.Id,
-                FirstName = data.Entity.FirstName,
-                LastName = data.Entity.LastName,
-                Email = data.Entity.Email,
-                PhoneNumber = data.Entity.PhoneNumber
+                Id = client.Id,
+                FirstName = client.FirstName,
+                LastName = client.LastName,
+                Email = client.Email,
+                PhoneNumber = client.PhoneNumber
             };
         }
     }

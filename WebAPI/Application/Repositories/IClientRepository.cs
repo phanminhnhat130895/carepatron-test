@@ -7,8 +7,8 @@ namespace Application.Repositories
 {
     public interface IClientRepository : IBaseRepository<Client>
     {
-        Task<EntityEntry<Client>> CreateClientAsync(Client client, CancellationToken cancellationToken);
+        Task CreateClientAsync(Client client, CancellationToken cancellationToken);
         void UpdateClient(Client client);
-        Task<List<Client>> GetClientsAsync(GetClientsRequest request, CancellationToken cancellationToken);
+        Task<GetClientsResponse> GetClientsAsync(GetClientsRequest request, CancellationToken cancellationToken);
     }
 }

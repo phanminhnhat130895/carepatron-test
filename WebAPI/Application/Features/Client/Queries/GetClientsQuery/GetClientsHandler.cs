@@ -15,12 +15,7 @@ namespace Application.Features.Client.Queries.GetClientsQuery
 
         public async Task<GetClientsResponse> Handle(GetClientsRequest request, CancellationToken cancellationToken)
         {
-            var data = await _clientRepository.GetClientsAsync(request, cancellationToken);
-
-            var result = new GetClientsResponse();
-            result.Clients = data;
-
-            return result;
+            return  await _clientRepository.GetClientsAsync(request, cancellationToken);
         }
     }
 }

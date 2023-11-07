@@ -8,7 +8,7 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
         {
             RuleFor(x => x.FirstName).NotEmpty().WithMessage("FirstName cannot be empty.");
 
-            RuleFor(x => x.LastName).NotEmpty().WithMessage("FirstName cannot be empty.");
+            RuleFor(x => x.LastName).NotEmpty().WithMessage("LastName cannot be empty.");
 
             RuleFor(x => x.Email).NotEmpty().WithMessage("Email cannot be empty.")
                                  .EmailAddress().WithMessage("Invalid email address.");
