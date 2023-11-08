@@ -31,21 +31,19 @@ namespace Infrastructure.Repositories
 
         public async Task<GetClientsResponse> GetClientsAsync(GetClientsRequest request, CancellationToken cancellationToken)
         {
-            var countClientTask = _context.Clients.CountAsync(cancellationToken);
-            var getClientTask = _context.Clients.AsNoTracking()
+            var countClient = await _context.Clients.CountAsync(cancellationToken);
+            var clients = await _context.Clients.AsNoTracking()
                                     .Where(x => string.IsNullOrEmpty(request.SearchString) ||
                                                 x.FirstName.ToLower().StartsWith(request.SearchString.ToLower()) || 
                                                 x.LastName.ToLower().StartsWith(request.SearchString.ToLower())
                                     )
-                                    .Skip(request.Page * request.PageSize)
+                                    .Skip((request.Page - 1) * request.PageSize)
                                     .Take(request.PageSize)
                                     .ToListAsync(cancellationToken);
 
-            await Task.WhenAll(countClientTask, getClientTask);
-
             var result = new GetClientsResponse();
-            result.Clients = getClientTask.Result;
-            result.TotalCount = countClientTask.Result;
+            result.Clients = clients;
+            result.TotalCount = countClient;
 
             return result;
         }

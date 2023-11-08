@@ -20,13 +20,11 @@ namespace UnitTest
     {
         private Mock<IClientRepository> _clientRepository;
         private Mock<IServiceBusHelper> _serviceBusHelper;
-        private Mock<ServiceBusSettings> _serviceBusQueue;
 
         protected override void Setup()
         {
             _clientRepository = new Mock<IClientRepository>();
             _serviceBusHelper = new Mock<IServiceBusHelper>();
-            _serviceBusQueue = new Mock<ServiceBusSettings>();
         }
 
         [Fact]
@@ -40,7 +38,7 @@ namespace UnitTest
                 PhoneNumber = "+84366016101"
             };
 
-            var command = new CreateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+            var command = new CreateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object);
 
             var result = await command.Handle(request, default);
 
@@ -92,7 +90,7 @@ namespace UnitTest
                 .Setup(repo => repo.GetClientByEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingClient);
 
-            var command = new CreateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+            var command = new CreateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object);
 
             await Assert.ThrowsAsync<Exception>(async () => await command.Handle(request, default));
         }
@@ -123,7 +121,7 @@ namespace UnitTest
                 .Setup(repo => repo.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(updatedClient);
 
-            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object);
 
             var result = await command.Handle(request, default);
 
@@ -149,7 +147,7 @@ namespace UnitTest
                 PhoneNumber = "+84366016101"
             };
 
-            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object);
 
             await Assert.ThrowsAsync<NotFoundException>(async () => await command.Handle(request, default));
         }
@@ -179,7 +177,7 @@ namespace UnitTest
                 .Setup(repo => repo.GetClientByEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingClient);
 
-            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object);
 
             await Assert.ThrowsAsync<Exception>(async () => await command.Handle(request, default));
         }

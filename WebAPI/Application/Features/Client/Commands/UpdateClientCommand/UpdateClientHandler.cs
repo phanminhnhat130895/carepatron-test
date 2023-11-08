@@ -10,14 +10,12 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
         private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
         private readonly IServiceBusHelper _serviceBusHelper;
-        private readonly ServiceBusSettings _serviceBusQueue;
 
-        public UpdateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusSettings serviceBusQueue)
+        public UpdateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper)
         {
             _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
             _serviceBusHelper = serviceBusHelper;
-            _serviceBusQueue = serviceBusQueue;
         }
 
         public async Task<UpdateClientResponse> Handle(UpdateClientRequest request, CancellationToken cancellationToken)
@@ -35,7 +33,7 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
             }
             else if (client.Id != request.Id)
             {
-                throw new Exception("Client already exists.");
+                throw new ResourceConflictException("Client already exists.");
             }
 
             var oldEmail = client.Email;
@@ -50,7 +48,7 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
 
             if (oldEmail != request.Email)
             {
-                await _serviceBusHelper.SendMessage(client.Email, _serviceBusQueue.QueueName, _serviceBusQueue.ConnectionString);
+                await _serviceBusHelper.SendMessage(client.Email);
             }
 
             return new UpdateClientResponse()

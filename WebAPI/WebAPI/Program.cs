@@ -2,6 +2,7 @@ using Application;
 using Application.Common.Helpers;
 using Infrastructure;
 using Infrastructure.Data;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 using WebAPI.Extensions;
@@ -17,13 +18,12 @@ namespace WebAPI
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
-                //.WriteTo.ApplicationInsights(builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString"), new TraceTelemetryConverter())
+                .WriteTo.ApplicationInsights(builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString"), new TraceTelemetryConverter())
                 .CreateLogger();
 
             builder.Host.UseSerilog();
 
             // Add services to the container.
-            builder.Configuration.GetSection("ServiceBusSettings").Get<ServiceBusSettings>();
             builder.Services.ConfigureApplication();
             builder.Services.ConfigureInfrastructure(builder.Configuration);
 
@@ -37,9 +37,9 @@ namespace WebAPI
 
             var app = builder.Build();
 
-            //var serviceScope = app.Services.CreateScope();
-            //var dataContext = serviceScope.ServiceProvider.GetService<DataContext>();
-            //dataContext?.Database.EnsureCreated();
+            var serviceScope = app.Services.CreateScope();
+            var dataContext = serviceScope.ServiceProvider.GetService<DataContext>();
+            dataContext?.Database.EnsureCreated();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

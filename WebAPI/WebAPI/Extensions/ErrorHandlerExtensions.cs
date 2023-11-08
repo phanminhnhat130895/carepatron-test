@@ -25,6 +25,7 @@ namespace WebAPI.Extensions
                         BadRequestException => (int)HttpStatusCode.BadRequest,
                         OperationCanceledException => (int)HttpStatusCode.ServiceUnavailable,
                         NotFoundException => (int)HttpStatusCode.NotFound,
+                        ResourceConflictException => (int)HttpStatusCode.Conflict,
                         _ => (int)HttpStatusCode.InternalServerError
                     };
 
@@ -37,7 +38,7 @@ namespace WebAPI.Extensions
                     if (contextFeature.Error is BadRequestException)
                     {
                         var error = contextFeature.Error as BadRequestException;
-                        errorResponse.message = error != null ? string.Join(",", error.Errors) : string.Empty;
+                        errorResponse.message = error == null ? string.Empty : string.Join(",", error.Errors);
                     }
                     else
                     {

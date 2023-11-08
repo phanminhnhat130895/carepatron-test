@@ -14,8 +14,9 @@ namespace Application
         {
             services.AddMediatR(config => config.RegisterServicesFromAssemblies(AssemblyReference.Assembly));
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-            services.AddTransient<IServiceBusHelper, ServiceBusHelper>();
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddScoped<ServiceBusSettings>();
+            services.AddScoped<IServiceBusHelper, ServiceBusHelper>();
         }
     }
 }

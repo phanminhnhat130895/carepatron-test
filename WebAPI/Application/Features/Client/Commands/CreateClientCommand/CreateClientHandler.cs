@@ -1,4 +1,5 @@
-﻿using Application.Common.Helpers;
+﻿using Application.Common.Exceptions;
+using Application.Common.Helpers;
 using Application.Repositories;
 using MediatR;
 
@@ -9,14 +10,12 @@ namespace Application.Features.Client.Commands.CreateClientCommand
         private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
         private readonly IServiceBusHelper _serviceBusHelper;
-        private readonly ServiceBusSettings _serviceBusQueue;
 
-        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusSettings serviceBusQueue)
+        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper)
         {
             _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
             _serviceBusHelper = serviceBusHelper;
-            _serviceBusQueue = serviceBusQueue;
         }
 
         public async Task<CreateClientResponse> Handle(CreateClientRequest request, CancellationToken cancellationToken)
@@ -25,7 +24,7 @@ namespace Application.Features.Client.Commands.CreateClientCommand
 
             if (clientByEmail != null)
             {
-                throw new Exception("Client already exists.");
+                throw new ResourceConflictException("Client already exists.");
             }
 
             var id = Guid.NewGuid();
@@ -40,7 +39,7 @@ namespace Application.Features.Client.Commands.CreateClientCommand
             await _clientRepository.CreateClientAsync(client, cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
 
-            await _serviceBusHelper.SendMessage(client.Email, _serviceBusQueue.QueueName, _serviceBusQueue.ConnectionString);
+            await _serviceBusHelper.SendMessage(client.Email);
 
             return new CreateClientResponse()
             {
