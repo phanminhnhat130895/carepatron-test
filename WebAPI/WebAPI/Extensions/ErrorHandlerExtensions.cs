@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
+using Serilog;
 using System.Net;
 using System.Text.Json;
 
@@ -42,6 +43,8 @@ namespace WebAPI.Extensions
                     {
                         errorResponse.message = contextFeature.Error.Message;
                     }
+
+                    Log.Error("Exception: {@error}", contextFeature.Error);
 
                     await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
                 });

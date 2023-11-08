@@ -14,6 +14,11 @@ namespace Infrastructure.Repositories
 
         }
 
+        public async Task<Client?> GetClientByEmail(string email, CancellationToken cancellationToken)
+        {
+            return await _context.Clients.FirstOrDefaultAsync(x => x.Email == email ,cancellationToken);
+        }
+
         public async Task CreateClientAsync(Client client, CancellationToken cancellationToken)
         {
             await base.CreateAsync(client, cancellationToken);
@@ -27,7 +32,11 @@ namespace Infrastructure.Repositories
         public async Task<GetClientsResponse> GetClientsAsync(GetClientsRequest request, CancellationToken cancellationToken)
         {
             var countClientTask = _context.Clients.CountAsync(cancellationToken);
-            var getClientTask = _context.Clients
+            var getClientTask = _context.Clients.AsNoTracking()
+                                    .Where(x => string.IsNullOrEmpty(request.SearchString) ||
+                                                x.FirstName.ToLower().StartsWith(request.SearchString.ToLower()) || 
+                                                x.LastName.ToLower().StartsWith(request.SearchString.ToLower())
+                                    )
                                     .Skip(request.Page * request.PageSize)
                                     .Take(request.PageSize)
                                     .ToListAsync(cancellationToken);

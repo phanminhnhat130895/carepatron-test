@@ -9,9 +9,9 @@ namespace Application.Features.Client.Commands.CreateClientCommand
         private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
         private readonly IServiceBusHelper _serviceBusHelper;
-        private readonly ServiceBusQueue _serviceBusQueue;
+        private readonly ServiceBusSettings _serviceBusQueue;
 
-        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusQueue serviceBusQueue)
+        public CreateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusSettings serviceBusQueue)
         {
             _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
@@ -21,6 +21,13 @@ namespace Application.Features.Client.Commands.CreateClientCommand
 
         public async Task<CreateClientResponse> Handle(CreateClientRequest request, CancellationToken cancellationToken)
         {
+            var clientByEmail = await _clientRepository.GetClientByEmail(request.Email, cancellationToken);
+
+            if (clientByEmail != null)
+            {
+                throw new Exception("Client already exists.");
+            }
+
             var id = Guid.NewGuid();
 
             var client = new Domain.Entities.Client(id);

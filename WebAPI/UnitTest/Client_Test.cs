@@ -16,17 +16,17 @@ using System.Threading.Tasks;
 
 namespace UnitTest
 {
-    public class Client_Test : BaseService_Test, IDisposable
+    public class Client_Test : Base_Test, IDisposable
     {
         private Mock<IClientRepository> _clientRepository;
         private Mock<IServiceBusHelper> _serviceBusHelper;
-        private Mock<ServiceBusQueue> _serviceBusQueue;
+        private Mock<ServiceBusSettings> _serviceBusQueue;
 
         protected override void Setup()
         {
             _clientRepository = new Mock<IClientRepository>();
             _serviceBusHelper = new Mock<IServiceBusHelper>();
-            _serviceBusQueue = new Mock<ServiceBusQueue>();
+            _serviceBusQueue = new Mock<ServiceBusSettings>();
         }
 
         [Fact]
@@ -66,6 +66,35 @@ namespace UnitTest
             Assert.Equal("LastName cannot be empty.", validationResult.Errors[1].ErrorMessage);
             Assert.Equal("Email cannot be empty.", validationResult.Errors[2].ErrorMessage);
             Assert.Equal("PhoneNumber cannot be empty.", validationResult.Errors[3].ErrorMessage);
+        }
+
+        [Fact]
+        public async Task Create_Client_With_Existing_Email_Throw_Exception()
+        {
+            var request = new CreateClientRequest()
+            {
+                Email = "nhat.phan@gmail.com",
+                FirstName = "Nhat",
+                LastName = "Phan",
+                PhoneNumber = "+84366016101"
+            };
+
+            var existingClient = new Client(Guid.NewGuid())
+            {
+                Email = "nhat.phan@gmail.com",
+                FirstName = "Nhat",
+                LastName = "Phan",
+                PhoneNumber = "+84366016101",
+                DateCreated = DateTime.Now
+            };
+
+            _clientRepository
+                .Setup(repo => repo.GetClientByEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(existingClient);
+
+            var command = new CreateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+
+            await Assert.ThrowsAsync<Exception>(async () => await command.Handle(request, default));
         }
 
         [Fact]
@@ -123,6 +152,36 @@ namespace UnitTest
             var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
 
             await Assert.ThrowsAsync<NotFoundException>(async () => await command.Handle(request, default));
+        }
+
+        [Fact]
+        public async Task Update_Client_With_Existing_Email_Throw_Exception()
+        {
+            var request = new UpdateClientRequest()
+            {
+                Id = Guid.NewGuid(),
+                Email = "nhat.phan@gmail.com",
+                FirstName = "Nhat",
+                LastName = "Phan",
+                PhoneNumber = "+84366016101"
+            };
+
+            var existingClient = new Client(Guid.NewGuid())
+            {
+                Email = "nhat.phan@gmail.com",
+                FirstName = "Nhat",
+                LastName = "Phan",
+                PhoneNumber = "+84366016101",
+                DateCreated = DateTime.Now
+            };
+
+            _clientRepository
+                .Setup(repo => repo.GetClientByEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(existingClient);
+
+            var command = new UpdateClientHandler(_mockUnitOfWork.Object, _clientRepository.Object, _serviceBusHelper.Object, _serviceBusQueue.Object);
+
+            await Assert.ThrowsAsync<Exception>(async () => await command.Handle(request, default));
         }
 
         [Fact]

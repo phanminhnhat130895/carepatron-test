@@ -1,16 +1,15 @@
 ﻿using Application.Repositories;
-using Domain.Entities;
 using Infrastructure.Data;
 using Moq;
 
 namespace UnitTest
 {
-    public abstract class BaseService_Test
+    public abstract class Base_Test
     {
         protected Mock<DataContext> _mockContext;
         protected Mock<IUnitOfWork> _mockUnitOfWork;
 
-        public BaseService_Test()
+        public Base_Test()
         {
             _mockContext = new Mock<DataContext>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();

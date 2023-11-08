@@ -1,10 +1,11 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace Application.Common.Helpers
 {
-    public class ServiceBusQueue
+    public class ServiceBusSettings
     {
         public string QueueName;
         public string ConnectionString;
@@ -32,6 +33,8 @@ namespace Application.Common.Helpers
             ServiceBusMessage message = new ServiceBusMessage(data);
 
             await sender.SendMessageAsync(message);
+
+            Log.Information("Send message to service bus quere: {@data}", data);
         }
     }
 }

@@ -20,7 +20,6 @@ namespace WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(CreateClientResponse))]
         [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
         public async Task<ActionResult<CreateClientResponse>> CreateClientAsync([FromBody] CreateClientRequest request, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(request, cancellationToken);

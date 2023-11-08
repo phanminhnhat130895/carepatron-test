@@ -10,9 +10,9 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
         private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
         private readonly IServiceBusHelper _serviceBusHelper;
-        private readonly ServiceBusQueue _serviceBusQueue;
+        private readonly ServiceBusSettings _serviceBusQueue;
 
-        public UpdateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusQueue serviceBusQueue)
+        public UpdateClientHandler(IUnitOfWork unitOfWork, IClientRepository clientRepository, IServiceBusHelper serviceBusHelper, ServiceBusSettings serviceBusQueue)
         {
             _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
@@ -22,11 +22,20 @@ namespace Application.Features.Client.Commands.UpdateClientCommand
 
         public async Task<UpdateClientResponse> Handle(UpdateClientRequest request, CancellationToken cancellationToken)
         {
-            var client = await _clientRepository.GetAsync(request.Id, cancellationToken);
+            var client = await _clientRepository.GetClientByEmail(request.Email, cancellationToken);
 
             if (client == null)
             {
-                throw new NotFoundException("Client not found.");
+                client = await _clientRepository.GetAsync(request.Id, cancellationToken);
+
+                if (client == null)
+                {
+                    throw new NotFoundException("Client not found.");
+                }
+            }
+            else if (client.Id != request.Id)
+            {
+                throw new Exception("Client already exists.");
             }
 
             var oldEmail = client.Email;
